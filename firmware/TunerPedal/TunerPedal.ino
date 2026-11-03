@@ -7,6 +7,7 @@
 // Every frame (68 ms of audio) goes through the same steps:
 //   audio.h      capture the guitar signal with the ADC and DMA
 //   pitch.h      find its frequency (YIN) and turn that into a note + cents
+//   display.h    light the meter LEDs
 //
 // Settings live in config.h. Open the Serial Monitor at 115200 baud to see
 // every reading.
@@ -16,6 +17,7 @@
 #include "config.h"
 #include "pitch.h"
 #include "audio.h"
+#include "display.h"
 
 static PitchDetector detector;
 static int16_t frame[kFrameLen];
@@ -41,6 +43,7 @@ static void printSilence(int level) {
 
 void setup() {
   Serial.begin(115200);
+  setupDisplay();
   startAudioCapture();
 }
 
@@ -54,8 +57,13 @@ void loop() {
   uint32_t calcMs = millis() - startMs;
 
   if (freq > 0) {
+    int note;
+    float cents;
+    freqToNote(freq, A4_REF_HZ, &note, &cents);
+    showCents(cents);
     printReading(freq, level, calcMs);
   } else {
+    showNothing();
     printSilence(level);
   }
 }

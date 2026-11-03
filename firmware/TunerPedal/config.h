@@ -9,6 +9,15 @@
 // RP2040-Zero GPIO numbers ("GPx" on the silkscreen). GP9-GP13 sit on the
 // bottom edge of the module and can't reach a breadboard, so they are unused.
 
+// ----- Meter LEDs
+// Three red "flat" LEDs left of the display and three red "sharp" LEDs right of
+// it, each listed from the one next to the display outwards.
+//
+//   GP0 L3  GP1 L2  GP2 L1  GP3 green  GP4 R1  GP5 R2  GP6 R3
+static const uint8_t FLAT_PINS[3] = {2, 1, 0};
+static const uint8_t SHARP_PINS[3] = {4, 5, 6};
+static const uint8_t GREEN_PIN = 3;  // "in tune", above the display
+
 // ----- Audio input
 // Must be an ADC pin: GP26..GP29 (ADC0..ADC3).
 #define AUDIO_PIN 26
@@ -40,3 +49,9 @@
 // ===== Tuning behaviour =====================================================
 
 #define A4_REF_HZ 440.0f
+
+// Within this many cents: green LED.
+#define IN_TUNE_CENTS 3.0f
+// Up to STEP1: inner red LED. Up to STEP2: middle red LED. Beyond: outer red LED.
+#define METER_STEP1_CENTS 12.0f
+#define METER_STEP2_CENTS 25.0f
