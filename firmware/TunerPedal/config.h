@@ -5,6 +5,14 @@
 #pragma once
 #include <stdint.h>
 
+// ===== Pins ================================================================
+// RP2040-Zero GPIO numbers ("GPx" on the silkscreen). GP9-GP13 sit on the
+// bottom edge of the module and can't reach a breadboard, so they are unused.
+
+// ----- Audio input
+// Must be an ADC pin: GP26..GP29 (ADC0..ADC3).
+#define AUDIO_PIN 26
+
 // ===== Pitch detection ======================================================
 
 // The ADC runs at SAMPLE_RATE * OVERSAMPLE, and each group of OVERSAMPLE
