@@ -7,6 +7,7 @@
 // Every frame (68 ms of audio) goes through the same steps:
 //   audio.h      capture the guitar signal with the ADC and DMA
 //   pitch.h      find its frequency (YIN) and turn that into a note + cents
+//   tracker.h    smooth the reading and hold the last note
 //   display.h    light the meter LEDs
 //
 // Settings live in config.h. Open the Serial Monitor at 115200 baud to see
@@ -17,19 +18,21 @@
 #include "config.h"
 #include "pitch.h"
 #include "audio.h"
+#include "tracker.h"
 #include "display.h"
 
 static PitchDetector detector;
 static int16_t frame[kFrameLen];
+static NoteTracker tracker;
 
-// e.g. "E2  82.38 Hz  -0.6 cents  (level 412, clarity 0.97, 38 ms)"
+// e.g. "E2  82.38 Hz  -0.6 cents  (shown -0.8, level 412, clarity 0.97, 38 ms)"
 static void printReading(float freq, int level, uint32_t calcMs) {
   int note;
   float cents;
   freqToNote(freq, A4_REF_HZ, &note, &cents);
-  Serial.printf("%s%d\t%.2f Hz\t%+.1f cents\t(level %d, clarity %.2f, %lu ms)\n",
-                kNoteNames[notePitchClass(note)], noteOctave(note), freq, cents, level,
-                detector.clarity(), (unsigned long)calcMs);
+  Serial.printf("%s%d\t%.2f Hz\t%+.1f cents\t(shown %+.1f, level %d, clarity %.2f, %lu ms)\n",
+                kNoteNames[notePitchClass(note)], noteOctave(note), freq, cents, tracker.cents(),
+                level, detector.clarity(), (unsigned long)calcMs);
 }
 
 // Prints the signal level about once a second while there's nothing to tune.
@@ -56,14 +59,16 @@ void loop() {
   if (level >= MIN_SIGNAL_P2P) freq = detector.detect(frame, SAMPLE_RATE, kMinLag, YIN_THRESHOLD);
   uint32_t calcMs = millis() - startMs;
 
-  if (freq > 0) {
-    int note;
-    float cents;
-    freqToNote(freq, A4_REF_HZ, &note, &cents);
-    showCents(cents);
-    printReading(freq, level, calcMs);
+  tracker.update(freq, millis());
+  if (tracker.hasNote()) {
+    showCents(tracker.cents());
   } else {
     showNothing();
+  }
+
+  if (freq > 0) {
+    printReading(freq, level, calcMs);
+  } else {
     printSilence(level);
   }
 }

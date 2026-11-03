@@ -55,3 +55,10 @@ static const uint8_t GREEN_PIN = 3;  // "in tune", above the display
 // Up to STEP1: inner red LED. Up to STEP2: middle red LED. Beyond: outer red LED.
 #define METER_STEP1_CENTS 12.0f
 #define METER_STEP2_CENTS 25.0f
+
+// How quickly the meter follows new readings (0..1, higher = faster but jumpier).
+#define CENTS_SMOOTHING 0.4f
+// A new note must be heard this many frames in a row before the display switches to it.
+#define NOTE_CONFIRM_FRAMES 2
+// Keep showing the last note this long after the string stops ringing.
+#define HOLD_MS 1500
