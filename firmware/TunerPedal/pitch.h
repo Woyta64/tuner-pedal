@@ -2,7 +2,7 @@
 // Pitch detection (YIN algorithm) and note math.
 //
 // Plain C++ with no Arduino dependencies, so the same code can be tested on a
-// PC.
+// PC (see ../test/pitch_test.cpp).
 // ---------------------------------------------------------------------------
 #pragma once
 #include <math.h>
