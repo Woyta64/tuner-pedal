@@ -8,7 +8,7 @@
 //   audio.h      capture the guitar signal with the ADC and DMA
 //   pitch.h      find its frequency (YIN) and turn that into a note + cents
 //   tracker.h    smooth the reading and hold the last note
-//   display.h    light the meter LEDs
+//   display.h    show the note and light the meter LEDs
 //
 // Settings live in config.h. Open the Serial Monitor at 115200 baud to see
 // every reading.
@@ -61,7 +61,7 @@ void loop() {
 
   tracker.update(freq, millis());
   if (tracker.hasNote()) {
-    showCents(tracker.cents());
+    showNote(tracker.note(), tracker.cents());
   } else {
     showNothing();
   }

@@ -18,6 +18,19 @@ static const uint8_t FLAT_PINS[3] = {2, 1, 0};
 static const uint8_t SHARP_PINS[3] = {4, 5, 6};
 static const uint8_t GREEN_PIN = 3;  // "in tune", above the display
 
+// ----- 7-segment display
+// BS-A554RD, driven through a 74HC164 shift register so it only needs 2 pins.
+// Outputs Q0..Q7 go to segments a, b, c, d, e, f, g, dp.
+// Set SEG_DATA_PIN to -1 if there's no display.
+#define SEG_DATA_PIN 7   // 74HC164 pins 1 + 2 (A, B)
+#define SEG_CLOCK_PIN 8  // 74HC164 pin 8 (CLK)
+
+// true  = common anode: common pin to 3V3, a segment lights when its output is LOW.
+// false = common cathode: common pin to GND, a segment lights when its output is HIGH.
+// The BS-A554RD is common anode. If the self-test lights everything except the
+// expected segment, flip this.
+#define SEG_COMMON_ANODE true
+
 // ----- Audio input
 // Must be an ADC pin: GP26..GP29 (ADC0..ADC3).
 #define AUDIO_PIN 26
