@@ -95,6 +95,13 @@ static void showNothing() {
   setMeterLeds(kNoLed, false, kNoLed);
 }
 
+static void showEverything() {
+  showSegments(kAllSegments);
+  for (uint8_t pin : FLAT_PINS) digitalWrite(pin, HIGH);
+  for (uint8_t pin : SHARP_PINS) digitalWrite(pin, HIGH);
+  digitalWrite(GREEN_PIN, HIGH);
+}
+
 static void setupDisplay() {
   if (kHasDisplay) {
     pinMode(SEG_DATA_PIN, OUTPUT);

@@ -11,7 +11,7 @@
 //   display.h    show the note and light the meter LEDs
 //
 // Settings live in config.h. Open the Serial Monitor at 115200 baud to see
-// every reading.
+// every reading and to use the test commands in diagnostics.h.
 // ---------------------------------------------------------------------------
 #include <Arduino.h>
 
@@ -20,6 +20,7 @@
 #include "audio.h"
 #include "tracker.h"
 #include "display.h"
+#include "diagnostics.h"
 
 static PitchDetector detector;
 static int16_t frame[kFrameLen];
@@ -47,11 +48,13 @@ static void printSilence(int level) {
 void setup() {
   Serial.begin(115200);
   setupDisplay();
+  runSelfTest();
   startAudioCapture();
 }
 
 void loop() {
   const uint16_t* raw = waitForAudio();
+  handleSerialCommands();
 
   uint32_t startMs = millis();
   int level = prepareFrame(raw, frame, kFrameLen, OVERSAMPLE);
