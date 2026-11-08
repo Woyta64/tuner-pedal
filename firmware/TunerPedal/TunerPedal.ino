@@ -26,6 +26,12 @@ static PitchDetector detector;
 static int16_t frame[kFrameLen];
 static NoteTracker tracker;
 
+// The footswitch pulls ENGAGE_PIN low while the pedal is on.
+static bool tunerEngaged() {
+  if (ENGAGE_PIN < 0) return true;  // no footswitch: always on
+  return digitalRead(ENGAGE_PIN) == LOW;
+}
+
 // e.g. "E2  82.38 Hz  -0.6 cents  (shown -0.8, level 412, clarity 0.97, 38 ms)"
 static void printReading(float freq, int level, uint32_t calcMs) {
   int note;
@@ -48,6 +54,7 @@ static void printSilence(int level) {
 void setup() {
   Serial.begin(115200);
   setupDisplay();
+  if (ENGAGE_PIN >= 0) pinMode(ENGAGE_PIN, INPUT_PULLUP);
   runSelfTest();
   startAudioCapture();
 }
@@ -55,6 +62,12 @@ void setup() {
 void loop() {
   const uint16_t* raw = waitForAudio();
   handleSerialCommands();
+
+  if (!tunerEngaged()) {
+    tracker.reset();
+    showNothing();
+    return;
+  }
 
   uint32_t startMs = millis();
   int level = prepareFrame(raw, frame, kFrameLen, OVERSAMPLE);

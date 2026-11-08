@@ -31,6 +31,12 @@ static const uint8_t GREEN_PIN = 3;  // "in tune", above the display
 // expected segment, flip this.
 #define SEG_COMMON_ANODE true
 
+// ----- Footswitch
+// The 3PDT's third pole pulls this pin to GND while the pedal is on (tuning).
+// In bypass the display and LEDs stay dark.
+// -1 = no switch wired up, the tuner is always on.
+#define ENGAGE_PIN -1
+
 // ----- Audio input
 // Must be an ADC pin: GP26..GP29 (ADC0..ADC3).
 #define AUDIO_PIN 26
