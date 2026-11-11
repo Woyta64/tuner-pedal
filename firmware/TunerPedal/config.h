@@ -1,6 +1,9 @@
 // ---------------------------------------------------------------------------
 // Tuner pedal settings. Pins, display type and tuning behaviour all live here,
 // so nothing else needs editing to adapt the firmware to your build.
+//
+// The pin values are for the PCB in hardware/. The breadboard build uses a
+// different LED order and has no latch or footswitch: see the notes below.
 // ---------------------------------------------------------------------------
 #pragma once
 #include <stdint.h>
@@ -13,17 +16,26 @@
 // Three red "flat" LEDs left of the display and three red "sharp" LEDs right of
 // it, each listed from the one next to the display outwards.
 //
-//   GP0 L3  GP1 L2  GP2 L1  GP3 green  GP4 R1  GP5 R2  GP6 R3
-static const uint8_t FLAT_PINS[3] = {2, 1, 0};
-static const uint8_t SHARP_PINS[3] = {4, 5, 6};
+//   PCB:         GP6 L3  GP5 L2  GP4 L1  GP3 green  GP2 R1  GP1 R2  GP0 R3
+//   Breadboard:  GP0 L3  GP1 L2  GP2 L1  GP3 green  GP4 R1  GP5 R2  GP6 R3
+//                -> FLAT_PINS = {2, 1, 0}, SHARP_PINS = {4, 5, 6}
+//
+// The PCB order is mirrored so the seven LED traces don't cross.
+static const uint8_t FLAT_PINS[3] = {4, 5, 6};
+static const uint8_t SHARP_PINS[3] = {2, 1, 0};
 static const uint8_t GREEN_PIN = 3;  // "in tune", above the display
 
 // ----- 7-segment display
-// BS-A554RD, driven through a 74HC164 shift register so it only needs 2 pins.
-// Outputs Q0..Q7 go to segments a, b, c, d, e, f, g, dp.
-// Set SEG_DATA_PIN to -1 if there's no display.
-#define SEG_DATA_PIN 7   // 74HC164 pins 1 + 2 (A, B)
-#define SEG_CLOCK_PIN 8  // 74HC164 pin 8 (CLK)
+// BS-A554RD, driven through a shift register so it only needs 2-3 pins.
+// Shift register outputs 1..8 (QA..QH on a 74HC595, Q0..Q7 on a 74HC164) go to
+// segments a, b, c, d, e, f, g, dp. Set SEG_DATA_PIN to -1 if there's no display.
+#define SEG_DATA_PIN 7   // 74HC595 pin 14 (SER)   / 74HC164 pins 1 + 2 (A, B)
+#define SEG_CLOCK_PIN 8  // 74HC595 pin 11 (SRCLK) / 74HC164 pin 8 (CLK)
+
+// 74HC595 pin 12 (RCLK). The outputs only change when this pulses, so the
+// segments don't flicker while the bits shift in.
+// Breadboard (74HC164, which has no latch): -1.
+#define SEG_LATCH_PIN 14
 
 // true  = common anode: common pin to 3V3, a segment lights when its output is LOW.
 // false = common cathode: common pin to GND, a segment lights when its output is HIGH.
@@ -33,9 +45,10 @@ static const uint8_t GREEN_PIN = 3;  // "in tune", above the display
 
 // ----- Footswitch
 // The 3PDT's third pole pulls this pin to GND while the pedal is on (tuning).
-// In bypass the display and LEDs stay dark.
-// -1 = no switch wired up, the tuner is always on.
-#define ENGAGE_PIN -1
+// In bypass the display and LEDs stay dark. Without the switch wired up, short
+// J2.2 (ENGAGE) to J2.3 (GND) on the PCB.
+// Breadboard (no switch): -1, the tuner is always on.
+#define ENGAGE_PIN 15
 
 // ----- Audio input
 // Must be an ADC pin: GP26..GP29 (ADC0..ADC3).

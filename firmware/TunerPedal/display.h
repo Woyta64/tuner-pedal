@@ -34,6 +34,7 @@ static const uint8_t kNoteGlyphs[12] = {
     kLetterF | kSegDot, kLetterG, kLetterG | kSegDot, kLetterA, kLetterA | kSegDot, kLetterB};
 
 static constexpr bool kHasDisplay = SEG_DATA_PIN >= 0;
+static constexpr bool kHasLatch = SEG_LATCH_PIN >= 0;
 
 static void showSegments(uint8_t segments) {
   if (!kHasDisplay) return;
@@ -41,14 +42,19 @@ static void showSegments(uint8_t segments) {
   // Common anode: a segment lights when its output is LOW.
   uint8_t outputs = SEG_COMMON_ANODE ? (uint8_t)~segments : segments;
 
-  // Only shift when something changed. The 74HC164 has no output latch, so the
-  // segments flicker for a few microseconds while the bits move through.
+  // Only shift when something changed. Without a latch (74HC164) the segments
+  // flicker for a few microseconds while the bits move through.
   static int lastOutputs = -1;
   if (outputs == lastOutputs) return;
   lastOutputs = outputs;
 
   // MSB first, so after 8 clocks bit 0 (segment a) sits on the first output.
   shiftOut(SEG_DATA_PIN, SEG_CLOCK_PIN, MSBFIRST, outputs);
+  if (kHasLatch) {
+    // 74HC595: copy the shifted bits to the outputs all at once.
+    digitalWrite(SEG_LATCH_PIN, HIGH);
+    digitalWrite(SEG_LATCH_PIN, LOW);
+  }
 }
 
 // ----- Meter LEDs -----------------------------------------------------------
@@ -106,6 +112,10 @@ static void setupDisplay() {
   if (kHasDisplay) {
     pinMode(SEG_DATA_PIN, OUTPUT);
     pinMode(SEG_CLOCK_PIN, OUTPUT);
+  }
+  if (kHasLatch) {
+    pinMode(SEG_LATCH_PIN, OUTPUT);
+    digitalWrite(SEG_LATCH_PIN, LOW);
   }
   for (uint8_t pin : FLAT_PINS) pinMode(pin, OUTPUT);
   for (uint8_t pin : SHARP_PINS) pinMode(pin, OUTPUT);
